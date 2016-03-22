@@ -47,40 +47,40 @@ class TerminalColor(object):
     
     @classmethod
     def color(cls, s):
-        return TerminalColor.escape("0;%s" % (s))
+        return TerminalColor.escape("0;{0!s}".format((s)))
     
     @classmethod
     def bold(cls, s):
-        return TerminalColor.escape("1;%s" % (s))
+        return TerminalColor.escape("1;{0!s}".format((s)))
     
     @classmethod
     def underline(cls, s):
-        return TerminalColor.escape("4;%s" % (s))
+        return TerminalColor.escape("4;{0!s}".format((s)))
     
     @classmethod
     def escape(cls, s):
-        return "\033[%sm" % (s)
+        return "\033[{0!s}m".format((s))
 
 def status(msg):
-    print "%s==>%s - %s" % (TerminalColor.blue(), TerminalColor.reset(), msg)
+    print "{0!s}==>{1!s} - {2!s}".format(TerminalColor.blue(), TerminalColor.reset(), msg)
 
 def title(msg):
-    print "%s==>%s %s%s" % (TerminalColor.blue(), TerminalColor.white(), msg, TerminalColor.reset())
+    print "{0!s}==>{1!s} {2!s}{3!s}".format(TerminalColor.blue(), TerminalColor.white(), msg, TerminalColor.reset())
 
 def success(msg):
-    print "%s==>%s %s%s" % (TerminalColor.green(), TerminalColor.white(), msg, TerminalColor.reset())
+    print "{0!s}==>{1!s} {2!s}{3!s}".format(TerminalColor.green(), TerminalColor.white(), msg, TerminalColor.reset())
 
 def error(msg):
-    print "%sError%s: %s" % (TerminalColor.red(), TerminalColor.reset(), msg)
+    print "{0!s}Error{1!s}: {2!s}".format(TerminalColor.red(), TerminalColor.reset(), msg)
     sys.exit(2)
 
 def version_from_config(config_file):
-    command = ['bash', '-c', 'source %s && echo $MAJOR.$MINOR${REVISION:+.$REVISION}' % config_file]
+    command = ['bash', '-c', 'source {0!s} && echo $MAJOR.$MINOR${{REVISION:+.$REVISION}}'.format(config_file)]
     p = subprocess.Popen(command, stdout=subprocess.PIPE)
     version = p.communicate()[0].strip()
 
-    p.returncode == 0 or sys.exit("Unable to get version from '%s'!" % config_file)
-    version[:2] == '2.' or sys.exit("Invalid version '%s'" % version)
+    p.returncode == 0 or sys.exit("Unable to get version from '{0!s}'!".format(config_file))
+    version[:2] == '2.' or sys.exit("Invalid version '{0!s}'".format(version))
     return version
 
 def xcopy(src, dst, makedirs=False):
@@ -215,13 +215,13 @@ def main():
     
     # Check if BASE_DIR actually exists.
     if not os.path.isdir(BASE_DIR):
-        error("Source directory doesn't exist: %s" % (BASE_DIR_ORIGINAL))
+        error("Source directory doesn't exist: {0!s}".format((BASE_DIR_ORIGINAL)))
     
     # If prune is not set and the target directory already
     # exists, exit with an error.
     if os.path.isdir(DEST_DIR) and not options.prune:
-       error("Target directory already exists: %s - use --prune to force removal." % 
-             (DEST_DIR_ORIGINAL))
+       error("Target directory already exists: {0!s} - use --prune to force removal.".format( 
+             (DEST_DIR_ORIGINAL)))
     
     # If prune is set, remove the target directory.
     if os.path.isdir(DEST_DIR) and options.prune:
@@ -231,7 +231,7 @@ def main():
     os.makedirs(DEST_DIR, 0755)
     
     if not os.path.isdir(DEST_DIR):
-        error("Failed to create target directory: %s" % (DEST_DIR_ORIGINAL))
+        error("Failed to create target directory: {0!s}".format((DEST_DIR_ORIGINAL)))
     
     title("Prepare MacGPG2 files for the installer")
     
@@ -284,7 +284,7 @@ def main():
     working_dir = os.getcwd()
     
     
-    status("Collect files to copy from %s" % (BASE_DIR_ORIGINAL))
+    status("Collect files to copy from {0!s}".format((BASE_DIR_ORIGINAL)))
     # Will contain every file of the base directory.
     all_files = reduce(lambda l1, l2: l1 + l2, 
                        map(lambda directory: tree_files(os.path.join(BASE_DIR, directory)), DIRS))
@@ -293,22 +293,22 @@ def main():
     # YES, we can dump a lot.
     distro_files = set(all_files).difference(EXCLUDE_FILES)
     
-    status("Copy files from %s to %s" % (BASE_DIR_ORIGINAL, DEST_DIR_ORIGINAL))
+    status("Copy files from {0!s} to {1!s}".format(BASE_DIR_ORIGINAL, DEST_DIR_ORIGINAL))
     # Copy all necessary files.
     try:
         copy_from_homebrew(BASE_DIR, DEST_DIR, distro_files)
         # For homebrew compatibility create a file with the current version.
-        version = version_from_config("%s/Version.config" % (working_dir))
-        if os.path.isdir("%s/share/gnupg" % DEST_DIR) and version:
-            status("Create version file for homebrew in %s/share/gnupg" % (DEST_DIR_ORIGINAL))
-            fh = open("%s/share/gnupg/VERSION" % DEST_DIR, "w")
+        version = version_from_config("{0!s}/Version.config".format((working_dir)))
+        if os.path.isdir("{0!s}/share/gnupg".format(DEST_DIR)) and version:
+            status("Create version file for homebrew in {0!s}/share/gnupg".format((DEST_DIR_ORIGINAL)))
+            fh = open("{0!s}/share/gnupg/VERSION".format(DEST_DIR), "w")
             fh.write(version)
             fh.close()
         
     except Exception, e:
         import traceback
         traceback.print_exc()
-        error("Failed to copy files from %s - %s" % (BASE_DIR_ORIGINAL, e))
+        error("Failed to copy files from {0!s} - {1!s}".format(BASE_DIR_ORIGINAL, e))
     
     
 
